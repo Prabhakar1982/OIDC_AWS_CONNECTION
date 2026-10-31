@@ -1,0 +1,50 @@
+name: Deploy S3 Bucket CloudFormation Stack
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 's3_bucket_file.yaml'
+  workflow_dispatch:
+    inputs:
+      bucket_name:
+        description: 'S3 bucket name'
+        required: true
+        type: string
+
+env:
+  AWS_REGION: ap-south-1
+  STACK_NAME: Test-s3-bucket-Stack
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+
+      - name: Deploy CloudFormation stack
+        env:
+          BUCKET_NAME: ${{ inputs.bucket_name || secrets.S3_BUCKET_NAME }}
+        run: |
+          if [ -z "$BUCKET_NAME" ]; then
+            echo "::error::Set the S3_BUCKET_NAME repository secret or provide the bucket_name input."
+            exit 1
+          fi
+
+          aws cloudformation deploy \
+            --template-file s3_bucket_file.yaml \
+            --stack-name "$STACK_NAME" \
+            --region "$AWS_REGION" \
+            --parameter-overrides "BucketName=$BUCKET_NAME" \
+            --no-fail-on-empty-changeset
