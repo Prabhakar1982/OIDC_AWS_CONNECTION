@@ -31,4 +31,5 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ${{ env.AWS_REGION }}
-          role-to-assume: arn:aws:iam:ap-south-1:597663815469:role/github-actions-role-new
+          role-to-assume: arn:aws:iam::597663815469:role/github-actions-role-new
+		  role-session-name: github-actions-${{ github.run_id }}
