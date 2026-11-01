@@ -31,20 +31,4 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ${{ env.AWS_REGION }}
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-
-      - name: Deploy CloudFormation stack
-        env:
-          BUCKET_NAME: ${{ inputs.bucket_name || secrets.S3_BUCKET_NAME }}
-        run: |
-          if [ -z "$BUCKET_NAME" ]; then
-            echo "::error::Set the S3_BUCKET_NAME repository secret or provide the bucket_name input."
-            exit 1
-          fi
-
-          aws cloudformation deploy \
-            --template-file s3_bucket_file.yaml \
-            --stack-name "$STACK_NAME" \
-            --region "$AWS_REGION" \
-            --parameter-overrides "BucketName=$BUCKET_NAME" \
-            --no-fail-on-empty-changeset
+          role-to-assume: arn:aws:iam:ap-south-1:597663815469:role/github-actions-role-new
